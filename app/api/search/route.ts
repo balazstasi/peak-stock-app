@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const response = await fetch(
       `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 3600 } }
     );
 
     if (!response.ok) {
