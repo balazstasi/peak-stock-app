@@ -4,7 +4,6 @@ import { SearchBar } from "@/components/search-bar";
 export default async function SearchPage({ searchParams }: { searchParams: { q: string } }) {
   const query = searchParams.q;
   let results: SymbolSearchResult | SymbolError | null = null;
-  console.log("🚀 ~ SearchPage ~ results:", results);
 
   if (query) {
     results = await searchSymbol(query);
