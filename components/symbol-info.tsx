@@ -1,3 +1,4 @@
+import { SymbolRecommendation } from "@/app/api/symbol/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -6,7 +7,7 @@ interface SymbolInfoProps {
 }
 
 export function SymbolInfo({ data }: SymbolInfoProps) {
-  const { quote, profile, recommendations, priceTarget } = data;
+  const { quote, profile, recommendations } = data;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -84,41 +85,15 @@ export function SymbolInfo({ data }: SymbolInfoProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell>{recommendations.buy}</TableCell>
-                <TableCell>{recommendations.hold}</TableCell>
-                <TableCell>{recommendations.sell}</TableCell>
-                <TableCell>{recommendations.strongBuy}</TableCell>
-                <TableCell>{recommendations.strongSell}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Price Target</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">Target High</TableCell>
-                <TableCell>${priceTarget.targetHigh.toFixed(2)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Target Low</TableCell>
-                <TableCell>${priceTarget.targetLow.toFixed(2)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Target Mean</TableCell>
-                <TableCell>${priceTarget.targetMean.toFixed(2)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Target Median</TableCell>
-                <TableCell>${priceTarget.targetMedian.toFixed(2)}</TableCell>
-              </TableRow>
+              {recommendations.map((recommendation: SymbolRecommendation) => (
+                <TableRow key={recommendation.period} className="text-left">
+                  <TableCell>{recommendation.buy.toFixed(2)}</TableCell>
+                  <TableCell>{recommendation.hold.toFixed(2)}</TableCell>
+                  <TableCell>{recommendation.sell.toFixed(2)}</TableCell>
+                  <TableCell>{recommendation.strongBuy.toFixed(6)}</TableCell>
+                  <TableCell>{recommendation.strongSell.toFixed(6)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
