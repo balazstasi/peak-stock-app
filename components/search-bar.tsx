@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { searchSymbol, SymbolSearchResult } from "@/app/services/symbol";
+import { searchSymbol, SymbolSearchResult } from "@/app/services/search-symbol";
 import { Spinner } from "@/components/ui/spinner";
 
 export function SearchBar() {

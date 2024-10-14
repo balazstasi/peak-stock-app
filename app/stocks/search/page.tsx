@@ -1,4 +1,4 @@
-import { searchSymbol, SymbolError, SymbolSearchResult } from "@/app/services/symbol";
+import { searchSymbol, SymbolError, SymbolSearchResult } from "@/app/services/search-symbol";
 import { SearchBar } from "@/components/search-bar";
 
 export default async function SearchPage({ searchParams }: { searchParams: { q: string } }) {
