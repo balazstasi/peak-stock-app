@@ -14,9 +14,8 @@ export interface SymbolError {
 
 export async function searchSymbol(symbol: string): Promise<SymbolSearchResult | SymbolError> {
   try {
-    const response = await fetch(`${process.env.LOCAL_URL}/api/search?symbol=${encodeURIComponent(symbol)}`);
+    const response = await fetch(`/api/search?symbol=${encodeURIComponent(symbol)}`);
 
-    console.log("🚀 ~ searchSymbol ~ response:", response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
