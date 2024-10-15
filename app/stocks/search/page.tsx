@@ -1,12 +1,13 @@
-import { searchSymbol, SymbolError, SymbolSearchResult } from "@/app/services/search-symbol";
+import { searchSymbol, SymbolSearchResult } from "@/app/services/search-symbol";
 import { SearchBar } from "@/components/search-bar";
+import { Effect } from "effect";
 
 export default async function SearchPage({ searchParams }: { searchParams: { q: string } }) {
   const query = searchParams.q;
-  let results: SymbolSearchResult | SymbolError | null = null;
+  let results: SymbolSearchResult | null = null;
 
   if (query) {
-    results = await searchSymbol(query);
+    results = await Effect.runPromise(searchSymbol(query));
   }
 
   return (

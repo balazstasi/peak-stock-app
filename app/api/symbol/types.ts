@@ -32,3 +32,14 @@ export interface SymbolRecommendation {
   strongBuy: number;
   strongSell: number;
 }
+
+export interface StockApiResponseData {
+  quote: SymbolQuote;
+  profile: SymbolProfile;
+  recommendations: SymbolRecommendation[];
+  statusCodes: {
+    quoteResponse: number;
+    profileResponse: number;
+    recommendationResponse: number;
+  };
+}

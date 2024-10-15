@@ -1,30 +1,54 @@
+import { Effect, Data } from "effect";
 import { NextRequest, NextResponse } from "next/server";
 
-const FINNHUB_API_KEY = process.env.API_KEY;
-const FINNHUB_BASE_URL = process.env.API_URL;
+const STOCK_API_KEY = process.env.API_KEY;
+const STOCK_BASE_URL = process.env.API_URL;
+
+class MissingSymbolError extends Data.TaggedError("MissingSymbolError")<{
+  message: string;
+}> {}
+
+class StockApiError extends Data.TaggedError("StockApiError")<{
+  message: string;
+}> {}
+
+const fetchStockData = (symbol: string): Effect.Effect<any, StockApiError, never> =>
+  Effect.tryPromise({
+    try: async () => {
+      const response = await fetch(
+        `${STOCK_BASE_URL}/search?q=${encodeURIComponent(symbol)}&token=${STOCK_API_KEY}`,
+        { next: { revalidate: 3600 } }
+      );
+
+      if (!response.ok) {
+        throw new StockApiError({ message: `Failed to fetch data from Stock API: ${response.statusText}` });
+      }
+
+      return response.json();
+    },
+    catch: (error) => new StockApiError({ message: `Failed to fetch data from Stock API: ${error}` }),
+  });
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const symbol = searchParams.get("symbol");
 
-  if (!symbol) {
-    return NextResponse.json({ error: "Symbol parameter is required" }, { status: 400 });
-  }
+  return Effect.runPromise(
+    Effect.gen(function* (_) {
+      if (!symbol) {
+        throw new MissingSymbolError({ message: "Symbol parameter is required" });
+      }
 
-  try {
-    const response = await fetch(
-      `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch data from Finnhub API");
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error fetching stock data:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
+      const data = yield* _(fetchStockData(symbol));
+      return NextResponse.json(data);
+    }).pipe(
+      Effect.catchAll((error) => {
+        if (error instanceof MissingSymbolError) {
+          return Effect.succeed(NextResponse.json({ error }, { status: 400 }));
+        }
+        console.error("Error fetching stock data:", error);
+        return Effect.succeed(NextResponse.json({ error }, { status: 500 }));
+      })
+    )
+  );
 }

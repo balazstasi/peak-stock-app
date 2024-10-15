@@ -1,3 +1,5 @@
+import { Effect, Data } from "effect";
+
 export interface SymbolSearchResult {
   count: number;
   result: {
@@ -8,27 +10,35 @@ export interface SymbolSearchResult {
   }[];
 }
 
-export interface SymbolError {
-  error: string;
-}
+class SymbolError extends Data.TaggedError("SymbolError")<{
+  message: string;
+}> {}
 
-export async function searchSymbol(symbol: string): Promise<SymbolSearchResult | SymbolError> {
-  try {
-    const response = await fetch(`/api/search?symbol=${encodeURIComponent(symbol)}`);
+class NetworkError extends Data.TaggedError("NetworkError")<{
+  status: number;
+}> {}
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+export const searchSymbol = (
+  symbol: string
+): Effect.Effect<SymbolSearchResult, SymbolError | NetworkError, never> =>
+  Effect.tryPromise({
+    try: async () => {
+      const response = await fetch(`/api/search?symbol=${encodeURIComponent(symbol)}`);
 
-    const data = await response.json();
+      if (!response.ok) {
+        throw new NetworkError({ status: response.status });
+      }
 
-    if ("error" in data) {
-      return data as SymbolError;
-    }
+      const data = await response.json();
 
-    return data as SymbolSearchResult;
-  } catch (error) {
-    console.error("Error fetching symbol data:", error);
-    return { error: "Failed to fetch symbol data" };
-  }
-}
+      if ("error" in data) {
+        throw new SymbolError({ message: data.error });
+      }
+
+      return data as SymbolSearchResult;
+    },
+    catch: (error) => {
+      console.error("Error fetching symbol data:", error);
+      return new SymbolError({ message: "Failed to fetch symbol data" });
+    },
+  });

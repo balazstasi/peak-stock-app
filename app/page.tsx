@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Home, Search, Heart } from "lucide-react";

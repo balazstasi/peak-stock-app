@@ -1,3 +1,4 @@
+import { Effect, Data } from "effect";
 import { SymbolQuote, SymbolProfile, SymbolRecommendation } from "@/app/api/symbol/types";
 
 interface GetSymbolInfoResponse {
@@ -11,24 +12,36 @@ interface GetSymbolInfoResponse {
   };
 }
 
-export async function getSymbolInfo(symbol: string): Promise<GetSymbolInfoResponse> {
-  try {
-    const response = await fetch(`http://localhost:3000/api/symbol?symbol=${encodeURIComponent(symbol)}`);
+class SymbolInfoError extends Data.TaggedError("SymbolInfoError")<{
+  message: string;
+}> {}
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+class NetworkError extends Data.TaggedError("NetworkError")<{
+  status: number;
+}> {}
 
-    const data = await response.json();
+export const getSymbolInfo = (
+  symbol: string
+): Effect.Effect<GetSymbolInfoResponse, SymbolInfoError | NetworkError, never> =>
+  Effect.tryPromise({
+    try: async () => {
+      const response = await fetch(`http://localhost:3000/api/symbol?symbol=${encodeURIComponent(symbol)}`);
 
-    return {
-      quote: data.quote,
-      profile: data.profile,
-      recommendations: data.recommendations,
-      statusCodes: data.statusCodes,
-    };
-  } catch (error) {
-    console.error("Error fetching symbol info:", error);
-    throw error;
-  }
-}
+      if (!response.ok) {
+        throw new NetworkError({ status: response.status });
+      }
+
+      const data = await response.json();
+
+      return {
+        quote: data.quote,
+        profile: data.profile,
+        recommendations: data.recommendations,
+        statusCodes: data.statusCodes,
+      };
+    },
+    catch: (error) => {
+      console.error("Error fetching symbol info:", error);
+      return new SymbolInfoError({ message: "Failed to fetch symbol info" });
+    },
+  });
