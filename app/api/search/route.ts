@@ -12,7 +12,7 @@ class StockApiError extends Data.TaggedError("StockApiError")<{
   message: string;
 }> {}
 
-const fetchStockData = (symbol: string): Effect.Effect<any, StockApiError, never> =>
+const fetchStockData = (symbol: string) =>
   Effect.tryPromise({
     try: async () => {
       const response = await fetch(
@@ -21,12 +21,16 @@ const fetchStockData = (symbol: string): Effect.Effect<any, StockApiError, never
       );
 
       if (!response.ok) {
-        throw new StockApiError({ message: `Failed to fetch data from Stock API: ${response.statusText}` });
+        return Effect.fail(
+          new StockApiError({ message: `Failed to fetch data from Stock API: ${response.statusText}` })
+        );
       }
 
       return response.json();
     },
-    catch: (error) => new StockApiError({ message: `Failed to fetch data from Stock API: ${error}` }),
+    catch: (error) => {
+      return Effect.fail(new StockApiError({ message: `Failed to fetch data from Stock API: ${error}` }));
+    },
   });
 
 export async function GET(request: NextRequest) {
@@ -36,7 +40,7 @@ export async function GET(request: NextRequest) {
   return Effect.runPromise(
     Effect.gen(function* (_) {
       if (!symbol) {
-        throw new MissingSymbolError({ message: "Symbol parameter is required" });
+        return Effect.fail(new MissingSymbolError({ message: "Symbol parameter is required" }));
       }
 
       const data = yield* _(fetchStockData(symbol));
@@ -44,10 +48,12 @@ export async function GET(request: NextRequest) {
     }).pipe(
       Effect.catchAll((error) => {
         if (error instanceof MissingSymbolError) {
-          return Effect.succeed(NextResponse.json({ error }, { status: 400 }));
+          return Effect.succeed(NextResponse.json({ error: error.message }, { status: 400 }));
         }
-        console.error("Error fetching stock data:", error);
-        return Effect.succeed(NextResponse.json({ error }, { status: 500 }));
+        if (error instanceof StockApiError) {
+          return Effect.succeed(NextResponse.json({ error: error.message }, { status: 500 }));
+        }
+        return Effect.succeed(NextResponse.json({ error: "Unknown error" }, { status: 500 }));
       })
     )
   );

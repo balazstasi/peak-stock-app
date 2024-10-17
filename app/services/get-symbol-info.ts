@@ -22,7 +22,7 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
 
 export const getSymbolInfo = (
   symbol: string
-): Effect.Effect<GetSymbolInfoResponse, SymbolInfoError | NetworkError, never> =>
+): Effect.Effect<GetSymbolInfoResponse["profile"], SymbolInfoError | NetworkError, never> =>
   Effect.tryPromise({
     try: async () => {
       const response = await fetch(`http://localhost:3000/api/symbol?symbol=${encodeURIComponent(symbol)}`);
@@ -33,15 +33,13 @@ export const getSymbolInfo = (
 
       const data = await response.json();
 
-      return {
-        quote: data.quote,
-        profile: data.profile,
-        recommendations: data.recommendations,
-        statusCodes: data.statusCodes,
-      };
+      if ("error" in data) {
+        throw new SymbolInfoError({ message: data.error });
+      }
+
+      return data as GetSymbolInfoResponse["profile"];
     },
     catch: (error) => {
-      console.error("Error fetching symbol info:", error);
-      return new SymbolInfoError({ message: "Failed to fetch symbol info" });
+      throw new SymbolInfoError({ message: `Failed to fetch symbol info: ${error}` });
     },
   });

@@ -33,6 +33,12 @@ export interface SymbolRecommendation {
   strongSell: number;
 }
 
+export interface SymbolData {
+  quote: SymbolQuote;
+  profile: SymbolProfile;
+  recommendations: SymbolRecommendation[];
+}
+
 export interface StockApiResponseData {
   quote: SymbolQuote;
   profile: SymbolProfile;

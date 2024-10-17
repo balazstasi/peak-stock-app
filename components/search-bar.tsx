@@ -7,8 +7,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { searchSymbol, SymbolSearchResult } from "@/app/services/search-symbol";
 import { Effect, pipe } from "effect";
 
+const DEBOUNCE_TIME = 300;
+
 export function SearchBar() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<SymbolSearchResult["result"] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -18,22 +20,22 @@ export function SearchBar() {
     (searchQuery: string) =>
       pipe(
         Effect.Do,
-        Effect.tap(() => setIsLoading(true)),
+        Effect.tap(() => Effect.sync(() => setIsLoading(true))),
         Effect.bind("searchResults", () => searchSymbol(searchQuery)),
-        Effect.tap(({ searchResults }) => setResults(searchResults.result)),
-        Effect.tap(() => setIsLoading(false)),
+        Effect.tap(({ searchResults }) => Effect.sync(() => setResults(searchResults.result))),
+        Effect.tap(() => Effect.sync(() => setIsLoading(false))),
         Effect.runPromise
       ),
     [debounceTimerRef]
   );
 
   const handleQueryChange = (newQuery: string) => {
-    setQuery(newQuery);
+    setQuery(newQuery.toUpperCase().split(".")[0]);
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
     if (newQuery.length > 0) {
-      debounceTimerRef.current = setTimeout(() => debouncedSearchResults(newQuery), 300);
+      debounceTimerRef.current = setTimeout(() => debouncedSearchResults(newQuery), DEBOUNCE_TIME);
     } else {
       setResults(null);
     }
@@ -67,14 +69,14 @@ export function SearchBar() {
         </Button>
       </div>
       {results && results.length > 0 && (
-        <ul className="mt-2 bg-background border border-input rounded-md shadow-sm">
+        <ul className="mt-2 bg-background border border-input rounded-md shadow-sm max-h-60 overflow-y-auto">
           {results.map((item) => (
             <li
               key={item.symbol}
               className="p-2 hover:bg-accent cursor-pointer"
               onClick={() => {
                 setQuery(item.symbol);
-                router.push(`/stocks/search?q=${encodeURIComponent(item.symbol)}`);
+                router.push(`/stocks/${item.symbol}`);
               }}
             >
               {item.symbol} - {item.description}

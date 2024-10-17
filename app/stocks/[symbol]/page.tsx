@@ -1,22 +1,20 @@
 import { getSymbolInfo } from "@/app/services/get-symbol-info";
 import { SymbolInfo } from "@/components/symbol-info";
-import { Title } from "@/components/ui/title";
+import { Effect } from "effect";
+import { twMerge as tw } from "tailwind-merge";
 
-interface SymbolPageProps {
-  params: {
-    symbol: string;
-  };
-}
-
-export default async function Symbol({ params }: SymbolPageProps) {
-  const symbolInfo = await getSymbolInfo(params.symbol);
+export default async function SymbolPage({ params }: { params: { symbol: string } }) {
+  const symbol = params.symbol;
+  const effect = getSymbolInfo(symbol);
+  const data = await Effect.runPromise(effect);
 
   return (
-    <div className="container mx-auto p-4">
-      <Title size="2xl" className="mb-8 ml-1">
-        {`Symbol Info - ${params.symbol}`}
-      </Title>
-      <SymbolInfo data={symbolInfo} />
+    <div className={container}>
+      <h1 className={header}>Symbol: {params.symbol}</h1>
+      <SymbolInfo data={data} />
     </div>
   );
 }
+
+const container = tw("container mx-auto p-4");
+const header = tw("text-2xl font-bold mb-4");

@@ -22,9 +22,11 @@ const fetchStockData = (symbol: string): Effect.Effect<StockApiResponse, StockAp
   Effect.tryPromise({
     try: async () => {
       const response = await fetch(
-        `${STOCK_BASE_URL}/search?q=${encodeURIComponent(symbol)}&token=${STOCK_API_KEY}`,
+        `${STOCK_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${STOCK_API_KEY}`,
         { next: { revalidate: 3600 } }
       );
+
+
 
       if (!response.ok) {
         throw new StockApiError({ message: "Failed to fetch data from Stock API" });

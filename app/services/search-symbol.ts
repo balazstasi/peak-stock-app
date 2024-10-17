@@ -18,27 +18,45 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
   status: number;
 }> {}
 
-export const searchSymbol = (
-  symbol: string
-): Effect.Effect<SymbolSearchResult, SymbolError | NetworkError, never> =>
-  Effect.tryPromise({
-    try: async () => {
-      const response = await fetch(`/api/search?symbol=${encodeURIComponent(symbol)}`);
+const fetchApi = (symbol: string) =>
+  Effect.tryPromise(() => fetch(`/api/search?symbol=${encodeURIComponent(symbol)}`));
 
-      if (!response.ok) {
-        throw new NetworkError({ status: response.status });
-      }
+const toJson = (response: Response) => Effect.tryPromise(() => response.json());
 
-      const data = await response.json();
+export const searchSymbol = (symbol: string) =>
+  Effect.gen(function* (_) {
+    if (symbol == null || symbol.length === 0) {
+      return Effect.fail(new SymbolError({ message: "No symbol provided" }));
+    }
 
-      if ("error" in data) {
-        throw new SymbolError({ message: data.error });
-      }
+    const response = yield* _(fetchApi(symbol));
 
-      return data as SymbolSearchResult;
-    },
-    catch: (error) => {
+    if (!response.ok) {
+      return Effect.fail(new NetworkError({ status: response.status }));
+    }
+
+    const data = yield* _(toJson(response));
+
+    if ("error" in data) {
+      return Effect.fail(new SymbolError({ message: data.error }));
+    }
+
+    if (data.count === 0) {
+      return Effect.fail(new SymbolError({ message: "No results found" }));
+    }
+
+    const result = {
+      count: data.count,
+      result: data.result.filter((item: { type: string; symbol: string }) => {
+        return item.type === "Common Stock" && !item.symbol.includes(".");
+      }),
+    };
+
+    return result;
+  }).pipe(
+    Effect.catchAll((error) => {
       console.error("Error fetching symbol data:", error);
-      return new SymbolError({ message: "Failed to fetch symbol data" });
-    },
-  });
+      return Effect.succeed({ result: [], count: 0 } as SymbolSearchResult);
+    }),
+    Effect.map((data) => data as SymbolSearchResult)
+  );
