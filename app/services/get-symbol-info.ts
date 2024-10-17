@@ -14,13 +14,13 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
   status: number;
 }> {}
 
-const isEnvLocal = process.env.NODE_ENV === "development";
+const isEnvDevelopment = process.env.NODE_ENV === "development";
 
 const fetchSymbolInfo = (symbol: string) =>
   Effect.tryPromise(() =>
     fetch(
       `${
-        isEnvLocal ? process.env.NEXT_PUBLIC_API_BASE_URL : process.env.NEXT_PUBLIC_API_BASE_URL
+        isEnvDevelopment ? "http://localhost:3000" : process.env.NEXT_PUBLIC_API_BASE_URL
       }/api/symbol?symbol=${encodeURIComponent(symbol)}`
     )
   );
