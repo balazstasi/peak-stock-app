@@ -32,10 +32,10 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="p-4 h-screen">
-      <h1 className="text-2xl font-bold mb-16">Your Favorite Stocks</h1>
+    <div className="p-4 h-[calc(100vh-128px)]">
+      <h1 className="text-2xl font-bold mb-16 text-white mt-4">Your Favorite Stocks</h1>
       {favorites.length === 0 ? (
-        <p>You haven't added any favorite stocks yet.</p>
+        <p className="text-white">You haven't added any favorite stocks yet.</p>
       ) : (
         <div className="flex flex-row flex-wrap gap-4">
           {favorites.map((symbol) => (
