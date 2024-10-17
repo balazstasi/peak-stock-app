@@ -14,15 +14,9 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
   status: number;
 }> {}
 
-const isEnvDevelopment = process.env.NODE_ENV === "development";
-
 const fetchSymbolInfo = (symbol: string) =>
   Effect.tryPromise(() =>
-    fetch(
-      `${
-        isEnvDevelopment ? "http://localhost:3000" : process.env.NEXT_PUBLIC_API_BASE_URL
-      }/api/symbol?symbol=${encodeURIComponent(symbol)}`
-    )
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/symbol?symbol=${encodeURIComponent(symbol)}`)
   );
 
 const toJson = (response: Response) => Effect.tryPromise(() => response.json());

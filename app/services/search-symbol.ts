@@ -19,7 +19,9 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
 }> {}
 
 const fetchApi = (symbol: string) =>
-  Effect.tryPromise(() => fetch(`/api/search?symbol=${encodeURIComponent(symbol)}`));
+  Effect.tryPromise(() =>
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/search?symbol=${encodeURIComponent(symbol)}`)
+  );
 
 const toJson = (response: Response) => Effect.tryPromise(() => response.json());
 
