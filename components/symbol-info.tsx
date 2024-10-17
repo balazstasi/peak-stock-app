@@ -2,10 +2,43 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SymbolData } from "@/app/api/symbol/types";
+import { Effect } from "effect";
+import { useEffect, useState } from "react";
+import { FavoritesService, FavoritesServiceLive } from "@/lib/favorites";
+import { Button } from "@/components/ui/button";
 
 export function SymbolInfo({ data }: { data: SymbolData }) {
+  const [isFavorite, setIsFavorite] = useState(false);
   const profile = data.profile;
   const recommendations = data.recommendations;
+
+  useEffect(() => {
+    const checkFavorite = async () => {
+      const effect = Effect.provide(FavoritesService, FavoritesServiceLive).pipe(
+        Effect.flatMap((service) => service.getFavorites()),
+        Effect.map((favorites) => favorites.includes(profile.ticker)),
+        Effect.tap((isFavorite) => setIsFavorite(isFavorite)),
+        Effect.catchAllCause((cause) => {
+          console.error(cause);
+          return Effect.succeed(false);
+        })
+      );
+      return Effect.runPromise(effect);
+    };
+
+    checkFavorite();
+  }, [profile.ticker]);
+
+  const handleToggleFavorite = async () => {
+    const effect = Effect.provide(
+      isFavorite
+        ? FavoritesService.removeFavorite(profile.ticker)
+        : FavoritesService.addFavorite(profile.ticker),
+      FavoritesServiceLive
+    );
+    await Effect.runPromise(effect);
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -34,6 +67,13 @@ export function SymbolInfo({ data }: { data: SymbolData }) {
               </TableRow>
             </TableBody>
           </Table>
+          <Button
+            onClick={handleToggleFavorite}
+            className="mt-4"
+            variant={isFavorite ? "destructive" : "default"}
+          >
+            {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+          </Button>
         </CardContent>
       </Card>
 

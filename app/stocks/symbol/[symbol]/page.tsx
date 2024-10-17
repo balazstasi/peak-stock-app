@@ -11,7 +11,7 @@ export default async function SymbolPage({ params }: { params: { symbol: string 
 
   return (
     <div className={container}>
-      <div className="flex justify-between items-center mb-16">
+      <div className="flex justify-between items-center mb-16 flex-col sm:flex-row">
         <h1 className="text-2xl font-bold mb-4">{symbol}</h1>
         <SearchBar />
       </div>
