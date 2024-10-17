@@ -1,15 +1,9 @@
 import { Effect, Data } from "effect";
-import { SymbolQuote, SymbolProfile, SymbolRecommendation } from "@/app/api/symbol/types";
+import { SymbolData, SymbolProfile, SymbolRecommendation } from "@/app/api/symbol/types";
 
 interface GetSymbolInfoResponse {
-  quote: SymbolQuote;
   profile: SymbolProfile;
   recommendations: SymbolRecommendation[];
-  statusCodes: {
-    quoteResponse: number;
-    profileResponse: number;
-    recommendationResponse: number;
-  };
 }
 
 class SymbolInfoError extends Data.TaggedError("SymbolInfoError")<{
@@ -20,26 +14,29 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
   status: number;
 }> {}
 
-export const getSymbolInfo = (
-  symbol: string
-): Effect.Effect<GetSymbolInfoResponse["profile"], SymbolInfoError | NetworkError, never> =>
-  Effect.tryPromise({
-    try: async () => {
-      const response = await fetch(`http://localhost:3000/api/symbol?symbol=${encodeURIComponent(symbol)}`);
+const fetchSymbolInfo = (symbol: string) =>
+  Effect.tryPromise(() => fetch(`http://localhost:3000/api/symbol?symbol=${encodeURIComponent(symbol)}`));
 
-      if (!response.ok) {
-        throw new NetworkError({ status: response.status });
-      }
+const toJson = (response: Response) => Effect.tryPromise(() => response.json());
 
-      const data = await response.json();
+export const getSymbolInfo = (symbol: string) =>
+  Effect.gen(function* (_) {
+    if (symbol == null || symbol.length === 0) {
+      return Effect.fail(new SymbolInfoError({ message: "No symbol provided" }));
+    }
 
-      if ("error" in data) {
-        throw new SymbolInfoError({ message: data.error });
-      }
+    const response = yield* _(fetchSymbolInfo(symbol));
 
-      return data as GetSymbolInfoResponse["profile"];
-    },
-    catch: (error) => {
-      throw new SymbolInfoError({ message: `Failed to fetch symbol info: ${error}` });
-    },
-  });
+    if (!response.ok) {
+      return Effect.fail(new NetworkError({ status: response.status }));
+    }
+
+    const data = yield* _(toJson(response));
+
+    return data;
+  }).pipe(
+    Effect.catchAll((error) =>
+      Effect.fail(new SymbolInfoError({ message: `Failed to fetch symbol info: ${error}` }))
+    ),
+    Effect.map((data) => data as SymbolData)
+  );

@@ -1,26 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SymbolData } from "@/app/api/symbol/types";
 
-interface SymbolInfoProps {
-  data: SymbolData["profile"];
-}
-
-export function SymbolInfo({ data }: SymbolInfoProps) {
-  const searchParams = useSearchParams();
-  const [interval, setInterval] = useState(searchParams.get("interval") || "1D");
-
-  useEffect(() => {
-    const newInterval = searchParams.get("interval");
-    if (newInterval) {
-      setInterval(newInterval);
-    }
-  }, [searchParams]);
-
-  const profile = data;
+export function SymbolInfo({ data }: { data: SymbolData }) {
+  const profile = data.profile;
+  const recommendations = data.recommendations;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -52,30 +37,32 @@ export function SymbolInfo({ data }: SymbolInfoProps) {
         </CardContent>
       </Card>
 
-      {/* <Card>
+      <Card>
         <CardHeader>
-          <CardTitle>Quote</CardTitle>
+          <CardTitle>Additional Info</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">Current Price</TableCell>
-                <TableCell>${quote.c.toFixed(2)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Change</TableCell>
-                <TableCell className={quote.d > 0 ? "text-green-600" : "text-red-600"}>
-                  ${quote.d.toFixed(2)} ({quote.dp.toFixed(2)}%)
+              <TableRow className="hover:bg-transparent">
+                <TableCell className="font-medium">Logo</TableCell>
+                <TableCell>
+                  <img src={profile?.logo} alt={profile?.name} width={48} />
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">High</TableCell>
-                <TableCell>${quote.h.toFixed(2)}</TableCell>
+                <TableCell className="font-medium">Country</TableCell>
+                <TableCell>
+                  <img
+                    src={`https://flagcdn.com/h20/${profile?.country.toLowerCase()}.png`}
+                    alt={profile?.country}
+                    width={48}
+                  />
+                </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">Low</TableCell>
-                <TableCell>${quote.l.toFixed(2)}</TableCell>
+                <TableCell className="font-medium">Currency</TableCell>
+                <TableCell>{profile?.currency}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -98,7 +85,7 @@ export function SymbolInfo({ data }: SymbolInfoProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recommendations.map((recommendation) => (
+              {(recommendations ?? []).map((recommendation) => (
                 <TableRow key={recommendation.period} className="text-left">
                   <TableCell>{recommendation.buy.toFixed(2)}</TableCell>
                   <TableCell>{recommendation.hold.toFixed(2)}</TableCell>
@@ -110,7 +97,7 @@ export function SymbolInfo({ data }: SymbolInfoProps) {
             </TableBody>
           </Table>
         </CardContent>
-      </Card> */}
+      </Card>
     </div>
   );
 }

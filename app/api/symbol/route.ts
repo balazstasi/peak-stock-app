@@ -1,4 +1,4 @@
-import { StockApiResponseData } from "@/app/api/symbol/types";
+import { StockApiResponseData, SymbolProfile, SymbolRecommendation } from "@/app/api/symbol/types";
 import { Effect, Data } from "effect";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,12 +13,12 @@ class StockApiError extends Data.TaggedError("StockApiError")<{
   message: string;
 }> {}
 
-class StockApiResponse extends Data.TaggedError("StockApiResponse")<{
+interface StockApiResponse {
   response: Response;
   data: StockApiResponseData;
-}> {}
+}
 
-const fetchStockData = (symbol: string): Effect.Effect<StockApiResponse, StockApiError, never> =>
+const fetchStockProfile = (symbol: string) =>
   Effect.tryPromise({
     try: async () => {
       const response = await fetch(
@@ -26,13 +26,28 @@ const fetchStockData = (symbol: string): Effect.Effect<StockApiResponse, StockAp
         { next: { revalidate: 3600 } }
       );
 
+      if (!response.ok) {
+        throw new StockApiError({ message: "Failed to fetch data from Stock API" });
+      }
 
+      return (await response.json()) as SymbolProfile;
+    },
+    catch: (error) => new StockApiError({ message: `Failed to fetch data from Stock API: ${error}` }),
+  });
+
+const fetchStockRecommendations = (symbol: string) =>
+  Effect.tryPromise({
+    try: async () => {
+      const response = await fetch(
+        `${STOCK_BASE_URL}/stock/recommendation?symbol=${encodeURIComponent(symbol)}&token=${STOCK_API_KEY}`,
+        { next: { revalidate: 3600 } }
+      );
 
       if (!response.ok) {
         throw new StockApiError({ message: "Failed to fetch data from Stock API" });
       }
 
-      return response.json();
+      return (await response.json()) as SymbolRecommendation[];
     },
     catch: (error) => new StockApiError({ message: `Failed to fetch data from Stock API: ${error}` }),
   });
@@ -44,18 +59,24 @@ export async function GET(request: NextRequest) {
   return Effect.runPromise(
     Effect.gen(function* (_) {
       if (!symbol) {
-        throw new MissingSymbolError({ message: "Symbol parameter is required" });
+        return Effect.fail(new MissingSymbolError({ message: "Symbol parameter is required" }));
       }
 
-      const data = yield* _(fetchStockData(symbol));
+      const profile = yield* _(fetchStockProfile(symbol));
+      const recommendations = yield* _(fetchStockRecommendations(symbol));
+      const data = {
+        profile,
+        recommendations,
+      };
       return NextResponse.json(data);
     }).pipe(
       Effect.catchAll((error) => {
         if (error instanceof MissingSymbolError) {
-          return Effect.succeed(NextResponse.json({ error }, { status: 400 }));
+          return Effect.succeed(
+            NextResponse.json({ error: "Symbol parameter is required" }, { status: 400 })
+          );
         }
-        console.error("Error fetching stock data:", error);
-        return Effect.succeed(NextResponse.json({ error }, { status: 500 }));
+        return Effect.succeed(NextResponse.json({ error: "Internal Server Error" }, { status: 500 }));
       })
     )
   );

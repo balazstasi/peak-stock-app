@@ -15,7 +15,6 @@ export interface SymbolProfile {
   finnhubIndustry: string;
   ipo: string;
   logo: string;
-
   marketCapitalization: number;
   name: string;
   phone: string;
@@ -34,18 +33,11 @@ export interface SymbolRecommendation {
 }
 
 export interface SymbolData {
-  quote: SymbolQuote;
   profile: SymbolProfile;
   recommendations: SymbolRecommendation[];
 }
 
 export interface StockApiResponseData {
-  quote: SymbolQuote;
   profile: SymbolProfile;
   recommendations: SymbolRecommendation[];
-  statusCodes: {
-    quoteResponse: number;
-    profileResponse: number;
-    recommendationResponse: number;
-  };
 }
