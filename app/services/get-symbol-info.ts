@@ -15,7 +15,7 @@ class NetworkError extends Data.TaggedError("NetworkError")<{
 }> {}
 
 const fetchSymbolInfo = (symbol: string) =>
-  Effect.tryPromise(() => fetch(`http://localhost:3000/api/symbol?symbol=${encodeURIComponent(symbol)}`));
+  Effect.tryPromise(() => fetch(`/api/symbol?symbol=${encodeURIComponent(symbol)}`));
 
 const toJson = (response: Response) => Effect.tryPromise(() => response.json());
 
