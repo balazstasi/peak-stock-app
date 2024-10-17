@@ -55,7 +55,6 @@ export const searchSymbol = (symbol: string) =>
     return result;
   }).pipe(
     Effect.catchAll((error) => {
-      console.error("Error fetching symbol data:", error);
       return Effect.succeed({ result: [], count: 0 } as SymbolSearchResult);
     }),
     Effect.map((data) => data as SymbolSearchResult)

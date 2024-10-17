@@ -18,7 +18,6 @@ interface NavigatorLayoutProps {
 
 export function NavigatorLayout({ children }: NavigatorLayoutProps) {
   const pathname = usePathname();
-  console.log("🚀 ~ NavigatorLayout ~ pathname:", pathname);
   const [expandedIndex, setExpandedIndex] = useState<number>(0);
 
   useEffect(() => {

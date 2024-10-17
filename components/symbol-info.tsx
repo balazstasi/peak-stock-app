@@ -19,7 +19,6 @@ export function SymbolInfo({ data }: { data: SymbolData }) {
         Effect.map((favorites) => favorites.includes(profile.ticker)),
         Effect.tap((isFavorite) => setIsFavorite(isFavorite)),
         Effect.catchAllCause((cause) => {
-          console.error(cause);
           return Effect.succeed(false);
         })
       );
