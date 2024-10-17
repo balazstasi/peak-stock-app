@@ -18,17 +18,25 @@ interface NavigatorLayoutProps {
 
 export function NavigatorLayout({ children }: NavigatorLayoutProps) {
   const pathname = usePathname();
+  console.log("🚀 ~ NavigatorLayout ~ pathname:", pathname);
   const [expandedIndex, setExpandedIndex] = useState<number>(0);
 
   useEffect(() => {
-    const currentIndex = menuItems.findIndex((item) => item.href === pathname);
-    if (currentIndex !== -1) {
-      setExpandedIndex(currentIndex);
-    }
+    const getMenuIndex = (pathname: string) => {
+      if (pathname === "/") {
+        return 0;
+      }
+      if (pathname.includes("favorites")) {
+        return 2;
+      }
+      return 1;
+    };
+    const currentIndex = getMenuIndex(pathname);
+    setExpandedIndex(currentIndex);
   }, [pathname]);
 
   return (
-    <div className="h-screen flex flex-col md:flex-row">
+    <div className="sm:h-full md:h-screen flex flex-col md:flex-row">
       {menuItems.map((item, index) => (
         <motion.div
           key={item.name}

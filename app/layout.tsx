@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/app/providers/theme-provider";
 import { NavigatorLayout } from "@/components/navigator/navigator-layout";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <body className={inter.className}>
+        <body className={cn(inter.className, "h-screen")}>
           <NavigatorLayout>{children}</NavigatorLayout>
         </body>
       </ThemeProvider>

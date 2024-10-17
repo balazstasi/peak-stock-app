@@ -4,10 +4,11 @@ import { Effect } from "effect";
 import { FavoritesService, FavoritesServiceLive } from "@/lib/favorites";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<string[]>([]);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchFavorites = async () => {
       const effect = Effect.provide(FavoritesService, FavoritesServiceLive).pipe(
@@ -31,14 +32,18 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-screen">
       <h1 className="text-2xl font-bold mb-16">Your Favorite Stocks</h1>
       {favorites.length === 0 ? (
         <p>You haven't added any favorite stocks yet.</p>
       ) : (
         <div className="flex flex-row flex-wrap gap-4">
           {favorites.map((symbol) => (
-            <Card key={symbol} className="bg-slate-900 hover:bg-slate-800 w-32">
+            <Card
+              key={symbol}
+              className="bg-slate-900 hover:bg-slate-800 w-32"
+              onClick={() => router.push(`/stocks/symbol/${symbol}`)}
+            >
               <CardHeader className="flex flex-row justify-between p-0">
                 <CardTitle className="text-white w-full">
                   <div className="flex flex-row justify-between p-4">
