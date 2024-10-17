@@ -1,6 +1,7 @@
 import { getSymbolInfo } from "@/app/services/get-symbol-info";
 import { SearchBar } from "@/components/search-bar";
 import { SymbolInfo } from "@/components/symbol-info";
+import { RecommendationChart } from "@/components/recommendation-chart";
 import { Effect } from "effect";
 import { twMerge as tw } from "tailwind-merge";
 
@@ -22,6 +23,11 @@ export default async function SymbolPage({ params }: { params: { symbol: string 
           recommendations: data.recommendations,
         }}
       />
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Recommendation Trends</h2>
+        <RecommendationChart recommendations={data.recommendations} />
+      </div>
     </div>
   );
 }
