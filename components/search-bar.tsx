@@ -44,7 +44,7 @@ export function SearchBar() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query) {
-      router.push(`/stocks/search?q=${encodeURIComponent(query)}`);
+      router.push(`/stocks/symbol/${query}`);
     }
   };
 
@@ -57,14 +57,10 @@ export function SearchBar() {
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
           placeholder="Search for a stock symbol..."
-          className="flex-grow pr-10"
+          className="flex-grow pr-10 text-md text-black placeholder:text-slate-500 bg-slate-200"
         />
-        {isLoading && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Spinner />
-          </div>
-        )}
-        <Button type="submit" className="ml-2 w-32">
+
+        <Button type="submit" disabled={isLoading} className="ml-2 w-32 bg-slate-800 text-white uppercase">
           {isLoading ? <Spinner /> : "Search"}
         </Button>
       </div>
