@@ -69,14 +69,14 @@ export function SearchBar() {
         </Button>
       </div>
       {results && results.length > 0 && (
-        <ul className="mt-2 bg-background border border-input rounded-md shadow-sm max-h-60 overflow-y-auto">
+        <ul className="absolute top-14 w-[280px] mt-2 bg-background border border-input rounded-md shadow-sm max-h-60 overflow-y-auto">
           {results.map((item) => (
             <li
               key={item.symbol}
               className="p-2 hover:bg-accent cursor-pointer"
               onClick={() => {
                 setQuery(item.symbol);
-                router.push(`/stocks/${item.symbol}`);
+                router.push(`/stocks/symbol/${item.symbol}`);
               }}
             >
               {item.symbol} - {item.description}

@@ -1,13 +1,16 @@
 import { SearchBar } from "@/components/search-bar";
-import { twMerge as tw } from "tailwind-merge";
 
-export default async function SearchPage() {
+export default function SearchPage() {
   return (
-    <div className={container}>
-      <SearchBar />
+    <div className="p-4">
+      <div className="flex justify-between items-center">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold mb-4 self-center">Search Stocks</h1>
+        </div>
+        <div className="flex flex-col">
+          <SearchBar />
+        </div>
+      </div>
     </div>
   );
 }
-
-const container = tw("container mx-auto p-4");
-const header = tw("text-2xl font-bold mb-4");

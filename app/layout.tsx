@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/app/providers/theme-provider";
-import { TopNavigator } from "@/components/top-navigator";
+import { NavigatorLayout } from "@/components/navigator/navigator-layout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,8 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <body className={inter.className}>
-          <TopNavigator />
-          {children}
+          <NavigatorLayout>{children}</NavigatorLayout>
         </body>
       </ThemeProvider>
     </html>
